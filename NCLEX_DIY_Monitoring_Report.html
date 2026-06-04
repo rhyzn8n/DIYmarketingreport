@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCLEX DIY Monitoring Report — IPASS Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --ink: #0F0E0C;
+    --ink-2: #3D3B36;
+    --ink-3: #7A786F;
+    --ink-4: #B0ADA4;
+    --paper: #F7F4EE;
+    --paper-2: #EFECE4;
+    --paper-3: #E5E0D4;
+    --accent: #C0392B;
+    --accent-2: #E8753A;
+    --accent-3: #1A5C8A;
+    --accent-4: #1D7A5A;
+    --rule: #D4CFBF;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'Instrument Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 2rem 3rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 1rem;
+  }
+  .masthead-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: .5rem;
+  }
+  .masthead-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -.01em;
+    color: var(--ink);
+  }
+  .masthead-title em { color: var(--accent); font-style: italic; }
+  .masthead-meta {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.8;
+  }
+  .masthead-meta strong { color: var(--ink); font-weight: 500; }
+
+  /* ── ALERT BANNER ── */
+  .alert {
+    background: var(--accent);
+    color: #fff;
+    padding: 1rem 3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .alert-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .alert strong { font-weight: 600; }
+
+  /* ── LAYOUT ── */
+  .container { padding: 2.5rem 3rem; }
+
+  /* ── SECTION HEADERS ── */
+  .section {
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .6rem;
+  }
+  .platform-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+  .pill-yt  { background: #FDECEA; color: #8B1A14; border: 1px solid #F5BCBA; }
+  .pill-rd  { background: #FEF3E8; color: #7A3B00; border: 1px solid #F5D4AD; }
+  .pill-gg  { background: #EEF2FF; color: #2B3A9E; border: 1px solid #C3CBF5; }
+  .pill-fb  { background: #E8F2FB; color: #0A3A6B; border: 1px solid #AAD0F2; }
+  .pill-tt  { background: #E8F8F1; color: #0A4D32; border: 1px solid #A4DBBF; }
+  .pill-st  { background: #F0EDE6; color: #3A3830; border: 1px solid #C8C3B4; }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    margin-bottom: .35rem;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--ink-3);
+    margin-bottom: 1.4rem;
+    max-width: 700px;
+  }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1.5px solid var(--ink);
+    margin-bottom: 2.5rem;
+  }
+  .summary-cell {
+    padding: 1.1rem 1.25rem;
+    border-right: 1.5px solid var(--ink);
+  }
+  .summary-cell:last-child { border-right: none; }
+  .summary-cell-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: .3rem;
+  }
+  .summary-cell-val {
+    font-family: var(--serif);
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--ink);
+    margin-bottom: .2rem;
+  }
+  .summary-cell-val.danger { color: var(--accent); }
+  .summary-cell-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+  /* ── CARDS ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--rule);
+    padding: 1.25rem 1.5rem;
+  }
+  .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: .3rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: .15rem;
+  }
+  .card-sub {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 1rem;
+  }
+  .chart-wrap { position: relative; }
+
+  /* ── TABLE ROWS ── */
+  .trow {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--paper-3);
+    font-size: 12.5px;
+  }
+  .trow:last-child { border-bottom: none; }
+  .trow-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-4);
+    min-width: 18px;
+    padding-top: 2px;
+  }
+  .trow-label { flex: 1; color: var(--ink); line-height: 1.45; }
+  .trow-label strong { font-weight: 600; }
+  .trow-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-3); text-align: right; line-height: 1.5; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .b-red  { background: #FDECEA; color: #8B1A14; border: 1px solid #F5BCBA; }
+  .b-amb  { background: #FEF3E8; color: #7A3B00; border: 1px solid #F5D4AD; }
+  .b-grn  { background: #EAF5EE; color: #1A5C32; border: 1px solid #ACDCC0; }
+  .b-blue { background: #E8F2FB; color: #0A3A6B; border: 1px solid #AAD0F2; }
+  .b-ink  { background: var(--paper-2); color: var(--ink-2); border: 1px solid var(--rule); }
+
+  /* ── BAR CHART (CSS) ── */
+  .bar-list { margin-top: .5rem; }
+  .bar-item { margin-bottom: .7rem; }
+  .bar-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); margin-bottom: .25rem; }
+  .bar-header span:last-child { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+  .bar-track { background: var(--paper-2); height: 8px; border-radius: 1px; overflow: hidden; }
+  .bar-fill { height: 8px; border-radius: 1px; transition: width 1s ease; }
+
+  /* ── GOOGLE RANKINGS ── */
+  .rank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 1.25rem; }
+  .rank-cell {
+    background: #fff;
+    padding: .9rem 1.1rem;
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+  }
+  .rank-n {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--ink-4);
+    min-width: 28px;
+  }
+  .rank-n.rank-1 { color: var(--accent); }
+  .rank-n.rank-2 { color: var(--accent-2); }
+  .rank-n.rank-6 { color: var(--accent-3); }
+  .rank-info {}
+  .rank-source { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-bottom: .2rem; text-transform: uppercase; letter-spacing: .06em; }
+  .rank-title-text { font-size: 12.5px; font-weight: 500; color: var(--ink); line-height: 1.4; margin-bottom: .3rem; }
+  .rank-stats { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+
+  /* ── STRATEGY CARDS ── */
+  .strategy-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--ink); border: 1.5px solid var(--ink); }
+  .strategy-card {
+    background: var(--paper);
+    padding: 1.25rem 1.3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .strategy-card::before {
+    content: attr(data-num);
+    font-family: var(--serif);
+    font-size: 5rem;
+    color: var(--paper-3);
+    position: absolute;
+    top: -.5rem;
+    right: .5rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .strategy-card h4 {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--ink);
+    margin-bottom: .5rem;
+    position: relative;
+    z-index: 1;
+    line-height: 1.3;
+  }
+  .strategy-card p {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+  }
+  .strategy-card .strat-source {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-4);
+    margin-top: .6rem;
+    position: relative;
+    z-index: 1;
+  }
+  .strategy-card.hot { background: var(--accent); }
+  .strategy-card.hot h4 { color: #fff; }
+  .strategy-card.hot p { color: rgba(255,255,255,0.85); }
+  .strategy-card.hot::before { color: rgba(0,0,0,.12); }
+  .strategy-card.hot .strat-source { color: rgba(255,255,255,.6); }
+
+  /* ── TIKTOK CREATOR TABLE ── */
+  .creator-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .creator-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-align: left;
+    padding: .5rem .75rem;
+    border-bottom: 1.5px solid var(--ink);
+    white-space: nowrap;
+  }
+  .creator-table th:not(:first-child) { text-align: right; }
+  .creator-table td {
+    padding: .5rem .75rem;
+    border-bottom: 1px solid var(--paper-3);
+    color: var(--ink);
+    vertical-align: middle;
+  }
+  .creator-table td:not(:first-child) { text-align: right; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+  .creator-table tr:last-child td { border-bottom: none; }
+  .creator-table tr:hover td { background: var(--paper-2); }
+  .creator-name { font-weight: 600; color: var(--ink); }
+  .creator-followers { font-size: 10px; color: var(--ink-4); font-family: var(--mono); }
+  .view-bar { display: inline-block; height: 4px; border-radius: 1px; background: var(--accent-4); vertical-align: middle; margin-left: 4px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 2px solid var(--ink);
+    padding: 1.25rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .footer strong { color: var(--ink); }
+
+  /* ── DIVIDER ── */
+  hr.section-div { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+  /* ── PRINT ── */
+  @media print {
+    .section { opacity: 1; transform: none; }
+    .masthead, .container { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+
+  @media (max-width: 900px) {
+    .masthead { grid-template-columns: 1fr; padding: 1.5rem; }
+    .masthead-meta { text-align: left; }
+    .container { padding: 1.5rem; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .summary-strip { grid-template-columns: 1fr 1fr; }
+    .summary-cell { border-right: none; border-bottom: 1.5px solid var(--ink); }
+    .rank-grid { grid-template-columns: 1fr; }
+    .strategy-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div>
+    <div class="masthead-label">Intelligence Brief · IPASS Processing Agency</div>
+    <h1 class="masthead-title">NCLEX <em>DIY Movement</em><br>Threat Monitoring Report</h1>
+  </div>
+  <div class="masthead-meta">
+    <strong>Report Date</strong><br>May 26, 2026<br><br>
+    <strong>Sources Monitored</strong><br>YouTube · Reddit · Google<br>Facebook · TikTok<br><br>
+    <strong>Data Sheet</strong><br>NCLEX DIY Monitoring.xlsx<br>Tab: NCLEX DIY
+  </div>
+</header>
+
+<!-- ALERT -->
+<div class="alert">
+  <span class="alert-icon">⚠</span>
+  <div><strong>High-Impact Threat:</strong> DIY self-processing content is accumulating over <strong>1.8M combined touchpoints</strong> across YouTube, Facebook, TikTok, and Reddit. Agency-defending content holds only <strong>1 of the top 6 Google results</strong> — dated November 2023. The narrative is being shaped without agency participation.</div>
+</div>
+
+<main class="container">
+
+  <!-- SUMMARY STRIP -->
+  <div class="summary-strip">
+    <div class="summary-cell">
+      <div class="summary-cell-label">YouTube · Combined Views</div>
+      <div class="summary-cell-val">~265K</div>
+      <div class="summary-cell-sub">Across 5 tracked videos<br>78K + 4.76K + 25K + 45K + 112K</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-cell-label">Facebook · Combined Followers</div>
+      <div class="summary-cell-val">503K+</div>
+      <div class="summary-cell-sub">6 pages promoting DIY content<br>120K + 111K + 195K + 32K + 25K + 20K</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-cell-label">TikTok · Combined Views</div>
+      <div class="summary-cell-val">~1.07M</div>
+      <div class="summary-cell-sub">10 tracked creators · sample content<br>Anzhela Ataiza leads at 249.8K</div>
+    </div>
+    <div class="summary-cell">
+      <div class="summary-cell-label">Agency Content · Google Top 6</div>
+      <div class="summary-cell-val danger">1 only</div>
+      <div class="summary-cell-sub">NEAC at rank 6 · published Nov 2023<br>No IPASS content in top 10</div>
+    </div>
+  </div>
+
+
+  <!-- ── SECTION 1: YOUTUBE ── -->
+  <section class="section" id="youtube">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-yt">▶ YouTube</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">YouTube Channels Promoting DIY Processing</h2>
+    <p class="section-desc">5 tracked videos across 5 channels. Crystel's video (112K views, updated 10 days ago) and ZEAGAL's DIY application guide (78K views, 7 days ago) are the highest-velocity threats — both actively receiving new comments.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Views ranking</div>
+        <div class="card-title">Video views — all 5 tracked videos</div>
+        <div class="card-sub">Combined: ~264,760 views</div>
+        <div class="bar-list">
+          <div class="bar-item">
+            <div class="bar-header"><span>Crystel — How I process my NCLEX (NY)</span><span>112,000</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--accent)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>ZEAGAL — DIY Application NYSED</span><span>78,000</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:70%;background:var(--accent-2)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Diane Salazar — Easiest Way to Apply NCLEX</span><span>45,000</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:40%;background:var(--ink-3)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Nurse Resty — 8 Tips to Pass NCLEX 2025</span><span>25,000</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:22%;background:var(--ink-3)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>ZEAGAL — NCLEX-RN New York DIY App</span><span>4,760</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:4%;background:var(--ink-4)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Engagement detail</div>
+        <div class="card-title">Per-video breakdown — subscribers, likes, comments & recency</div>
+        <div class="card-sub">Sorted by recency of new activity</div>
+        <div class="trow">
+          <div class="trow-num">01</div>
+          <div class="trow-label"><strong>Crystel</strong> (4.37K subs) — How I process my NCLEX application</div>
+          <div class="trow-meta">112K views · 2.7K likes<br>815 comments · <span style="color:var(--accent)">10 days ago</span></div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">02</div>
+          <div class="trow-label"><strong>ZEAGAL</strong> (4.76K subs) — NCLEX DIY Application NYSED</div>
+          <div class="trow-meta">78K views · 1.7K likes<br>608 comments · <span style="color:var(--accent)">7 days ago</span></div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">03</div>
+          <div class="trow-label"><strong>Nurse Resty</strong> (36.8K subs) — 8 Tips to Pass NCLEX 2025</div>
+          <div class="trow-meta">25K views · 857 likes<br>146 comments · 1 month ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">04</div>
+          <div class="trow-label"><strong>Diane Salazar</strong> (39.2K subs) — Easiest Way to Apply</div>
+          <div class="trow-meta">45K views · 800 likes<br>174 comments · 1 month ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">05</div>
+          <div class="trow-label"><strong>ZEAGAL</strong> (4.76K subs) — NCLEX-RN New York DIY</div>
+          <div class="trow-meta">4.76K views · 707 likes<br>511 comments · 5 months ago</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-div">
+
+  <!-- ── SECTION 2: REDDIT ── -->
+  <section class="section" id="reddit">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-rd">● Reddit</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">Reddit Threads — DIY vs Agency Discussions</h2>
+    <p class="section-desc">8 tracked threads across 3 subreddits. r/NursesPH draws 32K weekly visitors. r/NCLEX_PH draws 7.6K. r/NCLEX draws 21K. The most-upvoted thread is a step-by-step DIY guide posted 3 months ago — still receiving new comments.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Engagement — upvotes vs comments</div>
+        <div class="card-title">Thread reach by engagement signal</div>
+        <div class="card-sub">Upvotes signal reach; comments signal active discussion</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="rdChart" role="img" aria-label="Reddit thread upvotes and comments bar chart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Thread directory</div>
+        <div class="card-title">All 8 tracked Reddit threads</div>
+        <div class="card-sub">Sorted by upvotes descending</div>
+        <div class="trow">
+          <div class="trow-num">1</div>
+          <div class="trow-label"><strong>Ok-Depth-5328</strong> — Step-by-step DIY App Guide 2026 <span class="badge b-red">ATT/Eligibility</span></div>
+          <div class="trow-meta">r/NCLEX_PH · 206↑ · 119 comments<br><span style="color:var(--accent)">2 months ago · new comments</span></div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">2</div>
+          <div class="trow-label"><strong>Ok_Drink_4786</strong> — NCLEX DIY Processing <span class="badge b-amb">Step-by-step</span></div>
+          <div class="trow-meta">r/NCLEX_PH · 27↑ · 23 comments<br>2 months ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">3</div>
+          <div class="trow-label"><strong>Soggy-Fudge-882</strong> — NCLEX DIY or Agency <span class="badge b-amb">Q&amp;A</span></div>
+          <div class="trow-meta">r/NursesPH · 13↑ · 33 comments<br>4 months ago · new 26d ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">4</div>
+          <div class="trow-label"><strong>ExcitementOk4193</strong> — Planning DIY as new grad <span class="badge b-ink">Question</span></div>
+          <div class="trow-meta">r/NCLEX_PH · 10↑ · 20 comments<br>5 months ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">5</div>
+          <div class="trow-label"><strong>Effective-Fee-6096</strong> — nclex. diy or agency <span class="badge b-ink">Question</span></div>
+          <div class="trow-meta">r/NursesPH · 7↑ · 14 comments<br>7 months ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">6</div>
+          <div class="trow-label"><strong>[deleted]</strong> — Preparing to do DIY Processing <span class="badge b-ink">Question</span></div>
+          <div class="trow-meta">r/NCLEX · 6↑ · 14 comments<br>1 year ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">7</div>
+          <div class="trow-label"><strong>rtemisiaaaa222</strong> — NCLEX process: DIY okay? <span class="badge b-ink">Q&amp;A</span></div>
+          <div class="trow-meta">r/NCLEX_PH · 1↑ · 38 comments<br>8 months ago</div>
+        </div>
+        <div class="trow">
+          <div class="trow-num">8</div>
+          <div class="trow-label"><strong>HolidayTechnology802</strong> — Seeking advice on process <span class="badge b-ink">Advice</span></div>
+          <div class="trow-meta">r/NursesPH · 2↑ · 10 comments<br>15 days ago · new</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-div">
+
+  <!-- ── SECTION 3: GOOGLE ── -->
+  <section class="section" id="google">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-gg">◈ Google Search</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">Google Search Results — DIY NCLEX</h2>
+    <p class="section-desc">Top 6 organic results when nurses search for DIY NCLEX processing. DIY content holds ranks 1–3 and 5. A competitor blog holds rank 4. The only agency-defending article appears at rank 6 — published over 2 years ago.</p>
+
+    <div class="rank-grid">
+      <div class="rank-cell">
+        <div class="rank-n rank-1">1</div>
+        <div class="rank-info">
+          <div class="rank-source">Reddit / r/NCLEX_PH · Ok-Depth-5328</div>
+          <div class="rank-title-text">Step-by-step Guide to NCLEX DIY Application 2026</div>
+          <div class="rank-stats">206 upvotes · 119 comments · Published 3 months ago · New comments 2 months ago</div>
+        </div>
+        <span class="badge b-red">Highest threat</span>
+      </div>
+      <div class="rank-cell">
+        <div class="rank-n rank-2">2</div>
+        <div class="rank-info">
+          <div class="rank-source">Facebook / Philippine Registered Nurses</div>
+          <div class="rank-title-text">DIY NCLEX application process for Filipino nurses (Bullet RN)</div>
+          <div class="rank-stats">185 likes · 13 comments · Published Dec 12, 2025</div>
+        </div>
+        <span class="badge b-red">High threat</span>
+      </div>
+      <div class="rank-cell">
+        <div class="rank-n">3</div>
+        <div class="rank-info">
+          <div class="rank-source">Facebook / NCLEX Bootcamp Study Group</div>
+          <div class="rank-title-text">Hi po! For Filipino nurses here... (AttractiveB13)</div>
+          <div class="rank-stats">2 likes · 12 comments · Published April 10, 2026 · New comments 4 weeks ago</div>
+        </div>
+        <span class="badge b-amb">Rising · very recent</span>
+      </div>
+      <div class="rank-cell">
+        <div class="rank-n">4</div>
+        <div class="rank-info">
+          <div class="rank-source">The BridgeWay Firm</div>
+          <div class="rank-title-text">NCLEX Philippines: All you need to know</div>
+          <div class="rank-stats">Published January 22, 2026</div>
+        </div>
+        <span class="badge b-ink">Competitor blog</span>
+      </div>
+      <div class="rank-cell">
+        <div class="rank-n">5</div>
+        <div class="rank-info">
+          <div class="rank-source">tExtAMS</div>
+          <div class="rank-title-text">Cost Breakdown for Pinoy Nurses: NCLEX DIY Guide 2025</div>
+          <div class="rank-stats">Published June 1, 2025</div>
+        </div>
+        <span class="badge b-amb">DIY cost guide</span>
+      </div>
+      <div class="rank-cell">
+        <div class="rank-n rank-6">6</div>
+        <div class="rank-info">
+          <div class="rank-source">NEAC — Only agency-defending content in top 10</div>
+          <div class="rank-title-text">Why do you need a Processing Agency to apply for NCLEX?</div>
+          <div class="rank-stats">Published November 20, 2023 — over 2 years old</div>
+        </div>
+        <span class="badge b-blue">Weak defense</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-div">
+
+  <!-- ── SECTION 4: FACEBOOK ── -->
+  <section class="section" id="facebook">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-fb">f Facebook</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">Facebook Influencers — DIY Content Reach</h2>
+    <p class="section-desc">6 tracked pages with a combined 503,000+ followers. Nursebautistaela leads in follower count (195K+). Bullet RN's sample post has the highest likes (815) and Nurse Sheng drives the most shares (594) — indicating active content spreading.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Follower reach</div>
+        <div class="card-title">Pages by follower count</div>
+        <div class="card-sub">Combined: 503,000+ followers</div>
+        <div class="bar-list">
+          <div class="bar-item">
+            <div class="bar-header"><span>Nursebautistaela</span><span>195,000+</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--accent-3)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Nurse Sheng</span><span>120,000+</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:62%;background:var(--accent-3)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Bullet RN</span><span>111,000+</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:57%;background:var(--accent-3)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Nurse KATHihik</span><span>32,000+</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:16%;background:var(--ink-4)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>Nurse Steve</span><span>25,000</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:13%;background:var(--ink-4)"></div></div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-header"><span>The Life Shift Project (Karla RN)</span><span>20,000+</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--ink-4)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sample post engagement</div>
+        <div class="card-title">Likes, comments & shares on tracked DIY posts</div>
+        <div class="card-sub">Shares signal viral spread potential</div>
+        <div class="chart-wrap" style="height:230px">
+          <canvas id="fbChart" role="img" aria-label="Grouped bar chart of Facebook likes comments and shares per influencer"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-div">
+
+  <!-- ── SECTION 5: TIKTOK ── -->
+  <section class="section" id="tiktok">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-tt">♪ TikTok</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">TikTok Creators — DIY NCLEX Content</h2>
+    <p class="section-desc">10 tracked creators with a combined ~1.07M views on sample content alone. Anzhela Ataiza (22K+ followers) leads with 249.8K views, 16.7K saves, and 6,760 shares — signals that nurses are actively saving this content to follow the steps later.</p>
+
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-label">Creator breakdown</div>
+      <div class="card-title">All 10 TikTok creators — sample video performance</div>
+      <div class="card-sub">Sorted by video views descending · Saves = intent to apply DIY · Shares = organic spread</div>
+      <table class="creator-table">
+        <thead>
+          <tr>
+            <th>Creator</th>
+            <th>Followers</th>
+            <th>Views</th>
+            <th>Likes</th>
+            <th>Saves</th>
+            <th>Shares</th>
+            <th>Comments</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="creator-name">Anzhela Ataiza, RN</div></td>
+            <td>22,000+</td>
+            <td>249,800 <div class="view-bar" style="width:40px"></div></td>
+            <td>13,600+</td>
+            <td>16,700</td>
+            <td>6,760</td>
+            <td>349</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Nrs.Steve</div></td>
+            <td>3,416</td>
+            <td>126,100 <div class="view-bar" style="width:20px"></div></td>
+            <td>5,248</td>
+            <td>4,516</td>
+            <td>327</td>
+            <td>192</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Alex RN</div></td>
+            <td>6,469</td>
+            <td>117,400 <div class="view-bar" style="width:19px"></div></td>
+            <td>6,709</td>
+            <td>4,239</td>
+            <td>756</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Jay RN</div></td>
+            <td>695</td>
+            <td>114,640 <div class="view-bar" style="width:18px"></div></td>
+            <td>11,000+</td>
+            <td>9,890</td>
+            <td>2,023</td>
+            <td>226</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Shika</div></td>
+            <td>743</td>
+            <td>114,100 <div class="view-bar" style="width:18px"></div></td>
+            <td>7,702</td>
+            <td>8,603</td>
+            <td>1,579</td>
+            <td>112</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Reyjan Lapolonio (RJ)</div></td>
+            <td>1,371</td>
+            <td>97,500 <div class="view-bar" style="width:16px"></div></td>
+            <td>5,560</td>
+            <td>6,849</td>
+            <td>1,798</td>
+            <td>268</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Honey RN</div></td>
+            <td>1,270</td>
+            <td>90,900 <div class="view-bar" style="width:15px"></div></td>
+            <td>11,500+</td>
+            <td>13,000</td>
+            <td>2,909</td>
+            <td>230</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Nurse Dani</div></td>
+            <td>1,366</td>
+            <td>59,000 <div class="view-bar" style="width:9px"></div></td>
+            <td>4,049</td>
+            <td>2,095</td>
+            <td>358</td>
+            <td>558</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Nurse Sheng</div></td>
+            <td>14,600</td>
+            <td>53,000 <div class="view-bar" style="width:9px"></div></td>
+            <td>1,684</td>
+            <td>1,207</td>
+            <td>605</td>
+            <td>101</td>
+          </tr>
+          <tr>
+            <td><div class="creator-name">Elie RN</div></td>
+            <td>650</td>
+            <td>51,400 <div class="view-bar" style="width:8px"></div></td>
+            <td>1,225</td>
+            <td>1,369</td>
+            <td>398</td>
+            <td>221</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Views per creator</div>
+        <div class="card-title">Sample video views — top 10 creators</div>
+        <div class="card-sub">Total: ~1,073,840 combined views</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="ttViewChart" role="img" aria-label="Horizontal bar chart TikTok views per creator"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Saves vs shares</div>
+        <div class="card-title">Intent signals — top 10 creators</div>
+        <div class="card-sub">Saves = planning to DIY · Shares = spreading the content</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="ttSaveChart" role="img" aria-label="Grouped bar chart TikTok saves and shares per creator"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-div">
+
+  <!-- ── SECTION 6: STRATEGY ── -->
+  <section class="section" id="strategy">
+    <div class="section-eyebrow">
+      <span class="platform-pill pill-st">→ Strategy</span>
+      <div class="section-rule"></div>
+    </div>
+    <h2 class="section-title">Business Impact & Recommended Actions</h2>
+    <p class="section-desc">Six targeted recommendations derived exclusively from the DIY monitoring data above. Each action is tied to a specific platform finding.</p>
+
+    <div class="strategy-grid">
+      <div class="strategy-card hot" data-num="01">
+        <h4>Reclaim Google rank 1 — immediately</h4>
+        <p>A 3-month-old Reddit post with 206 upvotes outranks every processing agency. Publish a comprehensive, expert-authored NCLEX application guide with schema markup, real success data, and updated 2026 requirements — the one asset a Reddit user cannot replicate.</p>
+        <div class="strat-source">Source: Google Rankings · Rank 1 threat</div>
+      </div>
+      <div class="strategy-card" data-num="02">
+        <h4>Partner with top TikTok creators before competitors do</h4>
+        <p>Anzhela Ataiza (249.8K views, 16.7K saves), Honey RN (13K saves, 2,909 shares), and Jay RN (9.9K saves) are driving the highest nurse-to-DIY pipeline. One collaboration post from each reaches more intent-ready nurses than most paid campaigns at a fraction of the cost.</p>
+        <div class="strat-source">Source: TikTok data — saves & shares signals</div>
+      </div>
+      <div class="strategy-card" data-num="03">
+        <h4>Engage Reddit threads with expert presence</h4>
+        <p>8 active threads — several still drawing new comments today. Participating with genuine expert answers (not promotional posts) in r/NCLEX_PH (7.6K weekly visitors) and r/NursesPH (32K weekly visitors) builds credibility directly where nurses are deciding between DIY and agency.</p>
+        <div class="strat-source">Source: Reddit data — 8 active threads</div>
+      </div>
+      <div class="strategy-card" data-num="04">
+        <h4>Target Crystel & ZEAGAL's YouTube audience</h4>
+        <p>Crystel's video (112K views, 815 comments, updated 10 days ago) and ZEAGAL's (78K views, active 7 days ago) are the highest-velocity DIY YouTube content. Running pre-roll ads specifically targeting these two videos places IPASS in front of nurses mid-research — when intent is highest.</p>
+        <div class="strat-source">Source: YouTube data — recency & view volume</div>
+      </div>
+      <div class="strategy-card" data-num="05">
+        <h4>Activate Facebook's 503K+ combined reach</h4>
+        <p>Nurse Sheng (594 shares on a single post) and Bullet RN (204 shares, 185 likes, already ranking #2 on Google) show the highest viral reach on Facebook. A single partnership post across Nurse Sheng and Bullet RN's pages can intercept nurses before they commit to DIY processing.</p>
+        <div class="strat-source">Source: Facebook data — shares & Google ranking</div>
+      </div>
+      <div class="strategy-card" data-num="06">
+        <h4>Replace NEAC's aging rank 6 article</h4>
+        <p>NEAC's "Why use a processing agency?" article — published November 2023 — is the only agency-defending content in the entire top 10. It's aging out. IPASS publishing a fresher, stronger, more data-driven answer to this question now can capture that slot before it disappears entirely from search results.</p>
+        <div class="strat-source">Source: Google Rankings · Rank 6 defense gap</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div><strong>IPASS Processing Agency</strong> — NCLEX DIY Monitoring Report</div>
+  <div>Data source: NCLEX DIY Monitoring.xlsx · Tab: NCLEX DIY · May 26, 2026</div>
+</footer>
+
+<script>
+  // ── SCROLL REVEAL ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+  // ── CHART DEFAULTS ──
+  const C = Chart.defaults;
+  C.font.family = "'Instrument Sans', sans-serif";
+  C.color = '#7A786F';
+  const grid = 'rgba(0,0,0,0.05)';
+
+  // REDDIT
+  new Chart(document.getElementById('rdChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Ok-Depth\n(DIY Guide)', 'Ok_Drink\n(DIY Process)', 'Soggy-Fudge\n(DIY/Agency)', 'ExciteOk\n(Planning)', 'Effective-Fee\n(DIY/Agency)', '[deleted]\n(Preparing)', 'rtemisiaaaa\n(Process OK?)', 'HolidayTech\n(Advice)'],
+      datasets: [
+        { label: 'Upvotes', data: [206, 27, 13, 10, 7, 6, 1, 2], backgroundColor: '#C0392B' },
+        { label: 'Comments', data: [119, 23, 33, 20, 14, 14, 38, 10], backgroundColor: '#F5C6C2' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { font: { size: 9.5 } } },
+        y: { grid: { color: grid }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // FACEBOOK
+  new Chart(document.getElementById('fbChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Nurse Sheng', 'Bullet RN', 'Nurse KATHihik', 'Nurse Steve', 'Nursebautistaela', 'Karla RN'],
+      datasets: [
+        { label: 'Likes', data: [726, 815, 132, 58, 18, 5], backgroundColor: '#1A5C8A' },
+        { label: 'Comments', data: [94, 50, 15, 12, 0, 0], backgroundColor: '#85B7D9' },
+        { label: 'Shares', data: [594, 204, 256, 11, 14, 9], backgroundColor: '#B0D5EC' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { font: { size: 10 } } },
+        y: { grid: { color: grid }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // TIKTOK VIEWS
+  new Chart(document.getElementById('ttViewChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Anzhela Ataiza', 'Nrs.Steve', 'Alex RN', 'Jay RN', 'Shika', 'Reyjan RJ', 'Honey RN', 'Nurse Dani', 'Nurse Sheng', 'Elie RN'],
+      datasets: [{ data: [249800, 126100, 117400, 114640, 114100, 97500, 90900, 59000, 53000, 51400], backgroundColor: '#1D7A5A' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { font: { size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } },
+        y: { grid: { color: grid }, ticks: { font: { size: 9.5 } } }
+      }
+    }
+  });
+
+  // TIKTOK SAVES & SHARES
+  new Chart(document.getElementById('ttSaveChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Anzhela', 'Jay RN', 'Shika', 'Honey RN', 'Reyjan', 'Nrs.Steve', 'Nurse Dani', 'Nurse Sheng', 'Alex RN', 'Elie RN'],
+      datasets: [
+        { label: 'Saves', data: [16700, 9890, 8603, 13000, 6849, 4516, 2095, 1207, 4239, 1369], backgroundColor: '#1D7A5A' },
+        { label: 'Shares', data: [6760, 2023, 1579, 2909, 1798, 327, 358, 605, 756, 398], backgroundColor: '#9FE1CB' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: grid }, ticks: { font: { size: 9.5 } } },
+        y: { grid: { color: grid }, ticks: { font: { size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } }
+      }
+    }
+  });
+</script>
+</body>
+</html>
